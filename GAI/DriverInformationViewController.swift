@@ -17,6 +17,7 @@ class DriverInformationViewController: UIViewController {
     var accidents = MutableObservableArray<AccidentObj>([])
     var cars = MutableObservableArray<CarObj>([])
     var driver: DriverObj?
+    @IBOutlet var buttonsCategore: [UIButton]!
     
     @IBOutlet weak var nameTextfield: UITextField!
     @IBOutlet weak var surnameTextfield: UITextField!
@@ -59,31 +60,40 @@ class DriverInformationViewController: UIViewController {
     
     func alertCarAction(){
         
-        let alert = UIAlertController(title: "Some Title", message: "Enter a text", preferredStyle: .alert)
+        let alert = UIAlertController(title: "Car", message: "Enter base information", preferredStyle: .alert)
         
         alert.addTextField { (textField) in
-            textField.text = "Color"
+            textField.placeholder = "Category"
         }
         
         alert.addTextField { (textField) in
-            textField.text = "Mark"
+            textField.placeholder = "Mark"
         }
         
         alert.addTextField { (textField) in
-            textField.text = "ID"
+            textField.placeholder = "ID"
         }
         
+        alert.addTextField { (textField) in
+            textField.placeholder = "Color"
+        }
+
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { [weak alert] (_) in
-            if (alert!.textFields![0].text != nil && alert!.textFields![1].text != nil &&  alert!.textFields![2].text != nil){
-                if (Int(alert!.textFields![2].text!) != nil){
-                    let c = Car(driver: nil, id: Int(alert!.textFields![2].text!)!, category: .A, color: alert!.textFields![0].text!, mark: alert!.textFields![1].text!, year: 23, day: 23, month: .May, hours: 2)
+            
+            var category: carClass?
+            if let cat = alert!.textFields![0].text, let mark = alert!.textFields![1].text, let id = alert!.textFields![2].text, let col = alert!.textFields![3].text{
+                if cat == "A" {category = .A}
+                if cat == "B" {category = .B}
+                if cat == "C" {category = .C}
+                if cat == "D" {category = .D}
+                if let id = Int(id), let c = category{
+                    let c = Car(driver: nil, id: id, category: c, color: col, mark: mark, year: 0, day: 0, month: .January, hours: 0)
                     myRealm.addCar(car: c, driverID: self.driver!.id)
-                    self.cars.append(getCarObject(car: c))
+                    self.cars.append(CarObj.getCarObject(car: c))
                 }
             }
         }))
         
         self.present(alert, animated: true, completion: nil)
     }
-    
 }

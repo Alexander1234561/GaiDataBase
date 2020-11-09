@@ -12,7 +12,7 @@ class Person {
         self.id = id
     }
     func fullName() -> String {
-        return "\(name) \(surname) : \(id)"
+        return "\(name) \(surname)"
     }
 }
 
@@ -161,29 +161,25 @@ class Date {
 //класс инцидента
 class Accident{
     
+    let description: String
     let trafficCop: TrafficCop
     weak var driver: Driver?
-    weak var car: Car?
+    let car: carClass
+    let carID: Int
     let fine: Int
     let date: Date
 
     
-    init(car: Car, driver: Driver, trafficCop: TrafficCop, fine: Int, year: Int, day: Int, month: Month, hours: Int) {
+    init(car: carClass, carID: Int, driver: Driver, trafficCop: TrafficCop, fine: Int, year: Int, day: Int, month: Month, hours: Int, description: String) {
+        self.carID = carID
+        self.description = description
         self.car = car
         self.driver = driver
         self.trafficCop = trafficCop
         let carFine = Fine()
         if (driver.luxuryStatus == true) { carFine.setCategory(carFine: friendCategory()) }
-        if (!driver.category.contains(car.category)) { carFine.setCategory(carFine: diffCategory()) }
-        self.fine = carFine.execute(driverCategory: driver.category, carCategory: car.category, fineSum: fine)
-        self.date = Date(year: year, month: month, day: day, hours: hours)
-    }
-    
-    init(car: Car, trafficCop: TrafficCop, fine: Int, year: Int, day: Int, month: Month, hours: Int) {
-        self.car = car
-        //self.driver = driver
-        self.trafficCop = trafficCop
-        self.fine = fine
+        if (!driver.category.contains(car)) { carFine.setCategory(carFine: diffCategory()) }
+        self.fine = carFine.execute(driverCategory: driver.category, carCategory: car, fineSum: fine)
         self.date = Date(year: year, month: month, day: day, hours: hours)
     }
 }

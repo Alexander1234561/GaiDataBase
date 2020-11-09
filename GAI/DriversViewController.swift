@@ -29,26 +29,26 @@ class DriversViewController: UIViewController{
     //Создание алерта для заполнения данных
     func alertAction(){
         
-        let alert = UIAlertController(title: "Some Title", message: "Enter a text", preferredStyle: .alert)
+        let alert = UIAlertController(title: "Driver", message: "Enter information", preferredStyle: .alert)
         
         alert.addTextField { (textField) in
-            textField.text = "Name"
+            textField.placeholder = "Name"
         }
         
         alert.addTextField { (textField) in
-            textField.text = "Surname"
+            textField.placeholder = "Surname"
         }
         
         alert.addTextField { (textField) in
-            textField.text = "ID"
+            textField.placeholder = "ID"
         }
         
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { [weak alert] (_) in
             if (alert!.textFields![0].text != nil && alert!.textFields![1].text != nil &&  alert!.textFields![2].text != nil){
                 if (Int(alert!.textFields![2].text!) != nil){
-                    let d = Driver(category: [], cars: [], accidents: [], name: alert!.textFields![0].text!, surname: alert!.textFields![0].text!, id: Int(alert!.textFields![2].text!)!, lStatus: true)
+                    let d = Driver(category: [], cars: [], accidents: [], name: alert!.textFields![0].text!, surname: alert!.textFields![1].text!, id: Int(alert!.textFields![2].text!)!, lStatus: true)
                     myRealm.addDriver(driver: d)
-                    self.drivers.append(getDriverObject(driver: d))
+                    self.drivers.append(DriverObj.getDriverObject(driver: d))
                 }
             }
         }))

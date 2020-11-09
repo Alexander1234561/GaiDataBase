@@ -1,7 +1,7 @@
 import Foundation
 import RealmSwift
 
-
+//Класс таблицы - Дата
 class DateObj: Object {
     
     @objc dynamic var year: Int = 0
@@ -9,29 +9,78 @@ class DateObj: Object {
     @objc dynamic var day: Int = 0
     @objc dynamic var hours: Int = 0
     
+    static func getDateObject(date: Date) -> DateObj{
+        
+        let dateObj = DateObj()
+        
+        if date.hours == nil{
+            dateObj.hours = 0
+        }
+        else {
+            dateObj.hours = date.hours!
+        }
+        dateObj.day = date.day
+        dateObj.month = date.month.rawValue
+        dateObj.year = date.year
+        
+        return dateObj
+    }
+    
 }
 
+//Класс таблицы - Авария
 class CarObj: Object {
     
     @objc dynamic var owner: DriverObj? = DriverObj()
     @objc dynamic var id: Int = 0
     @objc dynamic var color: String = ""
     @objc dynamic var mark: String = ""
+    @objc dynamic var category: Int = 0
     @objc dynamic var techInsp: DateObj? = DateObj()
     
+    //Создаем объект машины
+    static func getCarObject(car: Car) -> CarObj{
+        
+        let carObj = CarObj()
+        
+        carObj.id = car.id
+        carObj.mark = car.mark
+        carObj.color = car.color
+        carObj.category = car.category.rawValue
+        carObj.techInsp = DateObj.getDateObject(date: car.techInsp)
+        
+        return carObj
+    }
 }
 
-
+//Класс таблицы - Авария
 class AccidentObj: Object {
     
+    @objc dynamic var descriptionAc: String = ""
     @objc dynamic var trafficCop: String = ""
+    @objc dynamic var trafficCopID: Int = 0
     @objc dynamic var driver: DriverObj? = DriverObj()
     @objc dynamic var car: CarObj? = CarObj()
     @objc dynamic var fine: Int = 0
     @objc dynamic var date: DateObj? = DateObj()
     
+    //Создаем объект аварии
+    static func getAccidentObject(accident: Accident) -> AccidentObj{
+        
+        let accidentObj = AccidentObj()
+        
+        accidentObj.descriptionAc = accident.description
+        accidentObj.trafficCopID = accident.trafficCop.id
+        accidentObj.fine = accident.fine
+        accidentObj.trafficCop = accident.trafficCop.fullName()
+        accidentObj.date = DateObj.getDateObject(date: accident.date)
+        
+        return accidentObj
+    }
+    
 }
 
+// Класс таблицы - Водитель
 class DriverObj: Object {
     
     @objc dynamic var luxuryStatus: Bool = true
@@ -41,90 +90,49 @@ class DriverObj: Object {
     var category = List<Int>()
     var cars =  List<CarObj>()
     var accidents = List<AccidentObj>()
-}
-
-//Создаем временной объект
-func getDateObject(date: Date) -> DateObj{
+    
+    //Создаем объект водителя
+    static func getDriverObject(driver: Driver) -> DriverObj{
         
-    let dateObj = DateObj()
-    
-    if date.hours == nil{
-        dateObj.hours = 0
-    }
-    else {
-    dateObj.hours = date.hours!
-    }
-    dateObj.day = date.day
-    dateObj.month = date.month.rawValue
-    dateObj.year = date.year
-    
-    return dateObj
-}
-
-//Создаем объект машины
-func getCarObject(car: Car) -> CarObj{
-    
-    let carObj = CarObj()
-    
-    carObj.id = car.id
-    carObj.mark = car.mark
-    carObj.color = car.color
-    
-    carObj.techInsp = getDateObject(date: car.techInsp)
-    
-    return carObj
-}
-//Создаем объект аварии
-func getAccidentObject(accident: Accident) -> AccidentObj{
-    
-    let accidentObj = AccidentObj()
-    
-    //accidentObj.car = getCarObject(car: accident.car!)
-    accidentObj.fine = accident.fine
-    accidentObj.trafficCop = accident.trafficCop.fullName()
-    accidentObj.date = getDateObject(date: accident.date)
-    
-    return accidentObj
-}
-
-//Создаем объект водителя
-func getDriverObject(driver: Driver) -> DriverObj{
-    
-    let driverObj: DriverObj = DriverObj()
-    
-    driverObj.name = driver.name
-    driverObj.surname = driver.surname
-    driverObj.id = driver.id
-    driverObj.luxuryStatus = driver.luxuryStatus
-    for car in driver.cars {
-        let cObj = getCarObject(car: car)
-        driverObj.cars.append(cObj)
-        cObj.owner = driverObj
-    }
-    for category in driver.category{
-        driverObj.category.append(category.rawValue)
-    }
-    for accident in driver.accidents{
-        let aObj = getAccidentObject(accident: accident)
-        for car in driverObj.cars{
-            if car.id == accident.car!.id{
-                aObj.driver = driverObj
-                aObj.car = car
-                driverObj.accidents.append(aObj)
+        let driverObj: DriverObj = DriverObj()
+        
+        driverObj.name = driver.name
+        driverObj.surname = driver.surname
+        driverObj.id = driver.id
+        driverObj.luxuryStatus = driver.luxuryStatus
+        for car in driver.cars {
+            let cObj = CarObj.getCarObject(car: car)
+            driverObj.cars.append(cObj)
+            cObj.owner = driverObj
+        }
+        for category in driver.category{
+            driverObj.category.append(category.rawValue)
+        }
+        for accident in driver.accidents{
+            let aObj = AccidentObj.getAccidentObject(accident: accident)
+            for car in driverObj.cars{
+                if car.id == accident.carID{
+                    aObj.driver = driverObj
+                    aObj.car = car
+                    driverObj.accidents.append(aObj)
+                }
             }
         }
+        
+        return driverObj
     }
-    
-    return driverObj
 }
 
+
+
+// Класс базы данных
 class myRealm {
     
     static private let realm = try! Realm()
     
     static func addDriver(driver: Driver) {
         
-        let dObj = getDriverObject(driver: driver)
+        let dObj = DriverObj.getDriverObject(driver: driver)
         try! realm.write{
             realm.add(dObj)
         }
@@ -132,7 +140,7 @@ class myRealm {
     
     static func addCar(car: Car, driverID: Int) {
         for driver in realm.objects(DriverObj.self) {
-            let carObj = getCarObject(car: car)
+            let carObj = CarObj.getCarObject(car: car)
             if driver.id == driverID {
                 carObj.owner = driver
                 try! realm.write{
@@ -145,12 +153,12 @@ class myRealm {
     
     static func addAccident(driverID: Int, carID: Int, accident: Accident) {
         
-        let aObj = getAccidentObject(accident: accident)
+        let aObj = AccidentObj.getAccidentObject(accident: accident)
         
         for driver in realm.objects(DriverObj.self) {
             if driver.id == driverID {
                 for car in driver.cars{
-                    if car.id == accident.car!.id{
+                    if car.id == accident.carID{
                         
                         aObj.driver = driver
                         aObj.car = car
