@@ -132,6 +132,7 @@ enum Month: Int{
     case July
     case August
     case September
+    case October
     case November
     case December
 }
@@ -157,29 +158,35 @@ class Date {
     }
 }
 
+func <= (left: Date, right: Date) -> Bool{
+    return left.year + left.month.rawValue + left.day <= right.year + right.month.rawValue + right.day ? true : false
+}
+
+func >= (left: Date, right: Date) -> Bool{
+    return left.year + left.month.rawValue + left.day >= right.year + right.month.rawValue + right.day ? true : false
+}
+
 ////////////////////////////////////////////////////////
 //класс инцидента
 class Accident{
     
     let description: String
     let trafficCop: TrafficCop
-    weak var driver: Driver?
     let car: carClass
     let carID: Int
     let fine: Int
     let date: Date
 
     
-    init(car: carClass, carID: Int, driver: Driver, trafficCop: TrafficCop, fine: Int, year: Int, day: Int, month: Month, hours: Int, description: String) {
+    init(car: carClass, carID: Int, driverCat: [carClass]?, driverLS: Bool,trafficCop: TrafficCop, fine: Int, year: Int, day: Int, month: Month, hours: Int, description: String) {
         self.carID = carID
         self.description = description
         self.car = car
-        self.driver = driver
         self.trafficCop = trafficCop
         let carFine = Fine()
-        if (driver.luxuryStatus == true) { carFine.setCategory(carFine: friendCategory()) }
-        if (!driver.category.contains(car)) { carFine.setCategory(carFine: diffCategory()) }
-        self.fine = carFine.execute(driverCategory: driver.category, carCategory: car, fineSum: fine)
+        if (driverLS == true) { carFine.setCategory(carFine: friendCategory()) }
+        else if (!driverCat!.contains(car)) { carFine.setCategory(carFine: diffCategory()) }
+        self.fine = carFine.execute(driverCategory: driverCat!, carCategory: car, fineSum: fine)
         self.date = Date(year: year, month: month, day: day, hours: hours)
     }
 }

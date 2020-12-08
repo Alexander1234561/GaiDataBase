@@ -135,6 +135,7 @@ class myRealm {
         let dObj = DriverObj.getDriverObject(driver: driver)
         try! realm.write{
             realm.add(dObj)
+            DLog("Created Driver Object: Succses")
         }
     }
     
@@ -146,6 +147,7 @@ class myRealm {
                 try! realm.write{
                     driver.cars.append(carObj)
                     realm.add(carObj)
+                    DLog("Created Car Object: Succses")
                 }
             }
         }
@@ -165,8 +167,103 @@ class myRealm {
                         try! realm.write{
                         driver.accidents.append(aObj)
                         realm.add(aObj)
+                        DLog("Created Accident Object: Succses")
                         }
                     }
+                }
+            }
+        }
+    }
+    
+    static func removeDriver(driverID: Int){
+         for driver in realm.objects(DriverObj.self) {
+            if driver.id == driverID {
+                try! realm.write {
+                realm.delete(driver.cars)
+                realm.delete(driver.accidents)
+                realm.delete(driver)
+                DLog("Removed Driver Object: Succses")
+                }
+            }
+        }
+    }
+    
+    static func removeCar(carID: Int){
+        for car in realm.objects(CarObj.self) {
+            if car.id == carID {
+                try! realm.write {
+                    realm.delete(getAccidentsWithID(carID: carID))
+                    realm.delete(car)
+                    DLog("Removed Car Object: Succses")
+                }
+            }
+        }
+    }
+    
+    static func removeAccident(driverID: Int,carID: Int, date: DateObj){
+        print(date.day)
+        print(date.month)
+        print(date.year)
+        for acc in realm.objects(AccidentObj.self) {
+            if acc.car!.id == carID && acc.driver!.id == driverID && acc.date!.year == date.year && acc.date!.month == date.month && acc.date!.day == date.day{
+                try! realm.write {
+                    realm.delete(acc)
+                    DLog("Removed Accident Object: Succses")
+                }
+            }
+        }
+    }
+    
+    static func addCategory(driverID: Int, category: Int){
+        for driver in realm.objects(DriverObj.self){
+            if driver.id == driverID {
+                 try! realm.write{
+                    if (!driver.category.contains(category)){
+                        driver.category.append(category)}
+                }
+            }
+        }
+    }
+    
+    static func removeCategory(driverID: Int, category: Int){
+        for driver in realm.objects(DriverObj.self){
+            if driver.id == driverID {
+                try! realm.write{
+                    if let num = driver.category.index(of: category){
+                        driver.category.remove(at: num)
+                        
+                    }
+                }
+            }
+        }
+    }
+    
+    static func changeDriverParam(name: String, surname: String, driverID: Int){
+        for driver in realm.objects(DriverObj.self){
+            if driver.id == driverID {
+                try! realm.write{
+                    driver.name = name
+                    driver.surname = surname
+                }
+            }
+        }
+    }
+    
+    static func changeCarParamColor(color: String, carID: Int){
+        for car in realm.objects(CarObj.self){
+            if car.id == carID {
+                try! realm.write{
+                    car.color = color
+                }
+            }
+        }
+    }
+    
+    static func changeCarParamTechInsp(date: Date, carID: Int){
+        for car in realm.objects(CarObj.self){
+            if car.id == carID {
+                try! realm.write{
+                    car.techInsp = DateObj.getDateObject(date: date)
                 }
             }
         }
@@ -190,6 +287,14 @@ class myRealm {
             if (driver.id == driverID) { return Array(driver.cars) }
         }
         return []
+    }
+    
+    static func getCarWithID(carID: Int) -> CarObj? {
+        
+        for car in realm.objects(CarObj.self) {
+            if (car.id == carID) { return car }
+        }
+        return nil
     }
     
     static func getAccidentsWithID(driverID: Int) -> [AccidentObj] {
